@@ -1,13 +1,16 @@
 // create the query url for the API
 
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+var plateUrl = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 
 // perform get request on the query url
 
 d3.json(queryUrl, function(data){
     // take the response and send it to a features function
-    console.log(data)
-    createFeatures(data.features);
+    d3.json(plateUrl, function(boundData){
+        console.log(data)
+        createFeatures(data.features, boundData.features);
+    })
 });
 
 
@@ -30,14 +33,14 @@ function style(feature) {
 	};
 }
 
-function createFeatures(earthquakeData){
+function createFeatures(earthquakeData, boundryData){
     // run through features array, create popups describing the quake
     
     function onEachFeature(feature, layer){
         layer.bindPopup("<h3>" + feature.properties.place + "</h3><hr><p>" + new Date(feature.properties.time) + "</p>");
     }
 
-    var earthquakes = L.geoJSON(earthquakeData, {
+    var boundaries = L.geoJSON(boundryData, {
         onEachFeature: onEachFeature
     });
 
@@ -47,10 +50,10 @@ function createFeatures(earthquakeData){
         }
     });
 
-    createMap(earthquakes, marker);
+    createMap(boundaries, marker);
 }
 
-function createMap(earthquakes, quakeMarker) {
+function createMap(boundry, quakeMarker) {
     // define layers
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
     "access_token=pk.eyJ1IjoiYmxhc2VyMjIiLCJhIjoiY2pjc2F3NXBmMHBzNjJxbnE2MjkzZWhmOCJ9.PGCeud8Kd0hTJ4Eh-w6nFg");
@@ -71,7 +74,7 @@ function createMap(earthquakes, quakeMarker) {
     // create overlay object
     var overlayMaps = {
         QuakeMarker: quakeMarker,
-        Earthquakes: earthquakes 
+        Boundries: boundry 
     };
 
     // create the map
