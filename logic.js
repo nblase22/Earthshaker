@@ -13,14 +13,12 @@ d3.json(queryUrl, function(data){
 
 // create the colors for the different magnitudes
 function getValue(x) {
-	return x > 7 ? "#800026" :
-	       x > 6.5 ? "#BD0026" :
-	       x > 6 ? "#E31A1C" :
-	       x > 5.5 ? "#FC4E2A" :
-	       x > 5 ? "#FD8D3C" :
-	       x > 4.5 ? "#FEB24C" :
-	       x > 4 ? "#FED976" :
-		       "#FFEDA0";
+	return x > 5 ? "#C70039" :
+	       x > 4 ? "#FF5733" :
+	       x > 3 ? "#FFC300" :
+           x > 2 ? "#DAF7A6" :
+           x > 1 ? "#229954" :
+		       "#1E8449";
 }
 
 // style the markers
@@ -55,17 +53,19 @@ function createFeatures(earthquakeData){
 function createMap(earthquakes, quakeMarker) {
     // define layers
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v10/tiles/256/{z}/{x}/{y}?" +
-    "access_token=pk.eyJ1Ijoia2pnMzEwIiwiYSI6ImNpdGRjbWhxdjAwNG0yb3A5b21jOXluZTUifQ." +
-    "T6YbdDixkOBWH_k9GbS8JQ");
+    "access_token=pk.eyJ1IjoiYmxhc2VyMjIiLCJhIjoiY2pjc2F3NXBmMHBzNjJxbnE2MjkzZWhmOCJ9.PGCeud8Kd0hTJ4Eh-w6nFg");
 
     var darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?" +
-    "access_token=pk.eyJ1Ijoia2pnMzEwIiwiYSI6ImNpdGRjbWhxdjAwNG0yb3A5b21jOXluZTUifQ." +
-    "T6YbdDixkOBWH_k9GbS8JQ");
+    "access_token=pk.eyJ1IjoiYmxhc2VyMjIiLCJhIjoiY2pjc2F3NXBmMHBzNjJxbnE2MjkzZWhmOCJ9.PGCeud8Kd0hTJ4Eh-w6nFg");
+
+    var satmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}?" +
+    "access_token=pk.eyJ1IjoiYmxhc2VyMjIiLCJhIjoiY2pjc2F3NXBmMHBzNjJxbnE2MjkzZWhmOCJ9.PGCeud8Kd0hTJ4Eh-w6nFg");
 
     // Define baseMaps to hold base layers
     var baseMaps = {
         "Street Map": streetmap,
-        "Dark Map": darkmap
+        "Dark Map": darkmap,
+        "Satellite Map": satmap
     };
 
     // create overlay object
@@ -78,9 +78,28 @@ function createMap(earthquakes, quakeMarker) {
     var myMap = L.map("map", {
         center: [ 37.09, -95.71],
         zoom: 5,
-        layers: [darkmap, quakeMarker]
+        layers: [satmap, quakeMarker]
     });
 
+    var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (myMap) {
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                mag = [0, 1, 2, 3, 4, 5],
+                labels = [];
+
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < mag.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getValue(mag[i] + 1) + '"></i> ' +
+                    mag[i] + (mag[i + 1] ? '&ndash;' + mag[i + 1] + '<br>' : '+');
+        }
+
+        return div;
+    };
+
+    legend.addTo(myMap);
     
 
     // create layer control passing in base and overlay maps, add it to the map
